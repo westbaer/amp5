@@ -1,0 +1,12 @@
+this is not the html5 playlist player you're looking for.
+hacked together in an hour or so, so I apologize for the bad code.
+
+Create m3u files like this:
+$ find ./my_awesome_album/ -type f -name "*.mp3" | sort -n >| my_awesome_playlist.m3u
+
+And pass them to amp5 like this:
+>> http://example.com/amp5/#path=my_awesome_playlist.m3u
+
+(supports playlists from remote servers as well, although you might have to set the Access-Control-Allow-Origin header.)
+
+

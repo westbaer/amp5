@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8" />
+		<title>amp5</title>
+		<style>
+		body {
+			background: #77D8FF;
+			margin: 0;
+			padding: 0;
+			font-family: "Helvetica", "Verdana", sans-serif;
+			font-size: 12px;
+		}
+
+		#wrapper {
+			background: #fff;
+			width: 320px;
+			margin: auto;
+			margin-top: 4em;
+			padding-bottom: 8px;
+
+			-moz-border-radius-bottomright: 4px;
+			-moz-border-radius-bottomleft: 4px;
+			border-bottom-right-radius: 4px;
+			border-bottom-left-radius: 4px;
+		
+			border-bottom: 1px solid #0086B5;
+		}
+
+		#trackList {
+			list-style-type: none;
+			margin-left: 0;
+			padding-left: 2em;
+		}
+
+		#trackList li {
+			margin-bottom: 6px;
+		}
+
+		#trackList .playing {
+			font-weight: bold;
+		}
+
+		footer {
+			font-size: 10px;
+			color: #aaa;
+			text-align: center;
+			margin-top: 1em;
+		}
+		</style>
+		<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js"></script>
+		<script>
+			var amp5 = window.amp5 || new Object;
+			amp5.loadM3u = function(path) {
+				$.get(path, {}, function(data) {
+					var paths = data.split('\n');
+					var tracks = [];
+					for(var i = 0; i < paths.length; i++) {
+						if(paths[i] != "" && paths[i][0] != " " && paths[i][0] != "#") {
+							tracks.push(paths[i]);
+						}
+
+					}
+
+					amp5.readTracks(tracks);
+				});
+			};
+			
+			amp5.readTracks = function(list) {
+				$('#trackList').empty();
+				amp5.trackList = list;
+				amp5.trackIndex = 0;
+				for(var i = 0; i < amp5.trackList.length; i++) {
+					var x = $('<li>');
+					var a = $('<a>');
+					var c = amp5.trackList[i].split('/');
+					
+					x.attr("class", "track");
+					a.attr("href", 'javascript:amp5.play('+i+');');
+					
+					a.text(c[c.length-1]);
+					x.append(a);
+					$('#trackList').append(x);
+				}
+			};
+
+			amp5.play = function(i) {
+				amp5.trackIndex = i;
+				$('#audioPlayer').attr("src", amp5.trackList[i]);
+				$('#audioPlayer')[0].play();
+				
+				$('#trackList li').each(function(index) {
+					if(index == amp5.trackIndex) {
+						$(this).attr('class', 'playing');
+					} else {
+						$(this).attr('class', '');
+					}
+				});
+			};
+
+			amp5.index = function(b) {
+				var e = document.getElementById('amp5help');
+				if(b) {
+					e.style.display = '';
+				} else {
+					e.style.display = 'none';
+				}
+			};
+			
+			amp5.parseHash = function() {
+				if(window.location.hash.length > 0) {
+					var v = window.location.hash.substring(1);
+					var key = v.split('=')[0], val = v.split('=')[1];
+					if(key == "path") {
+						amp5.index(false);
+						amp5.loadM3u(val);
+					} else {
+						amp5.index(true);
+					}
+				} else {
+					amp5.index(true);
+				}	
+			};
+
+			window.addEventListener("load", function() {
+				amp5.parseHash();
+				
+				$('#audioPlayer')[0].addEventListener('ended', function() {
+					if(amp5.trackIndex < amp5.trackList.length-1) {	
+						amp5.trackIndex++;
+						amp5.play(amp5.trackIndex);
+					} else {
+						$('#audioPlayer')[0].pause();
+					}
+				}, false);
+			}, false);
+
+			window.addEventListener("hashchange", function() {
+				amp5.parseHash();
+			}, false);
+		</script>
+	</head>
+	<body id="body">
+		<div id="wrapper">
+			<audio id="audioPlayer" preload="true" style="width: 320px;" controls></audio>
+			<ul id="trackList">
+			</ul>
+			<div id="amp5help" style="display: none;">
+				<p>No m3u playlist found.</p>
+				<div class="form">
+					<input type="text" id="m3upath" size="20" style="font-size: 18px;" /> <input type="button" onclick="window.location.href = window.location.href+'#path='+document.getElementById('m3upath').value;" value="Play" />
+				</div>
+			</div>
+			<footer>Copyright 2011 Nicolas Haunold</footer>
+		</div>
+	</body>
+</html>
