@@ -52,7 +52,7 @@
 		<script>
 			var amp5 = window.amp5 || new Object;
 			amp5.loadM3u = function(path) {
-				$.get(path, {}, function(data) {
+				$.get(path + '?ts=' + (new Date()).getTime(), {}, function(data) {
 					var paths = data.split('\n');
 					var tracks = [];
 					for(var i = 0; i < paths.length; i++) {
